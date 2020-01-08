@@ -1,0 +1,1 @@
+# pixi-scratch-card-example
