@@ -1,6 +1,5 @@
 let app;
 
-// let spritesOnScreen = [];
 let gameContainer;
 
 const resources = [
@@ -8,29 +7,7 @@ const resources = [
     'resources/play_button.png',
     'resources/play_button_active.png',
     'resources/game_panel_01.png',
-    'resources/coin_spin/coin0001.png',
-    'resources/coin_spin/coin0002.png',
-    'resources/coin_spin/coin0003.png',
-    'resources/coin_spin/coin0004.png',
-    'resources/coin_spin/coin0005.png',
-    'resources/coin_spin/coin0006.png',
-    'resources/coin_spin/coin0007.png',
-    'resources/coin_spin/coin0008.png',
-    'resources/coin_spin/coin0009.png',
-    'resources/coin_spin/coin00010.png',
-    'resources/coin_spin/coin00011.png',
-    'resources/coin_spin/coin00012.png',
-    'resources/coin_spin/coin00013.png',
-    'resources/coin_spin/coin00014.png',
-    'resources/coin_spin/coin00015.png',
-    'resources/coin_spin/coin00016.png',
-    'resources/coin_spin/coin00017.png',
-    'resources/coin_spin/coin00018.png',
-    'resources/coin_spin/coin00019.png',
-    'resources/coin_spin/coin00020.png',
-    'resources/coin_spin/coin00021.png',
-    'resources/coin_spin/coin00022.png',
-    'resources/coin_spin/coin00023.png'
+    'resources/coin_spin/coin_spin.json'
 ];
 
 window.onload = function () {
@@ -99,7 +76,39 @@ const createBonusPage = () => {
     sprite.x = app.renderer.screen.width / 2;
     sprite.y = 300;
     gameContainer.addChild(sprite);
+    createStaticCoin();
+    TweenMax.fromTo(gameContainer, 1, { alpha: 0 }, { alpha: 1 });
     app.stage.addChild(gameContainer);
+};
+
+const createStaticCoin = () => {
+    const texture = PIXI.Texture.fromFrame(0);
+    const sprite = new PIXI.Sprite(texture);
+    sprite.x = app.renderer.screen.width / 2;
+    sprite.y = app.renderer.screen.height / 2;
+    sprite.anchor.set(0.5);
+    sprite.interactive = true;
+    sprite.on('click', () => {
+        gameContainer.removeChild(sprite);
+        animateCoin(23);
+    });
+    gameContainer.addChild(sprite);
+};
+
+const animateCoin = (numberOfFrames) => {
+    const animatedCoinTextures = [];
+    for (let i = 0; i < numberOfFrames; i++){
+        const texture = PIXI.Texture.fromFrame(`${i}`);
+        animatedCoinTextures.push(texture);
+    }
+
+    const animatedCoin = new PIXI.extras.AnimatedSprite(animatedCoinTextures);
+    animatedCoin.x = app.renderer.screen.width / 2;
+    animatedCoin.y = app.renderer.screen.height / 2;
+    animatedCoin.anchor.set(0.5);
+    animatedCoin.gotoAndPlay(0);
+    // TweenMax.fromTo(animatedCoin, 1, { scale: 1 }, { scale: 0 }).delay(2);
+    gameContainer.addChild(animatedCoin);
 };
 
 const cleanGameContainer = () => {
