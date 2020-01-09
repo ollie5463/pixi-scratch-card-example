@@ -31,13 +31,12 @@ window.onload = function () {
         app.ticker.add(animate);
     }
 
-    eventController.on('playClicked', () => {
+    eventController.once('playClicked', () => {
         cleanGameContainer().then(() => {
             createBonusPage();
         });
     });
-    eventController.on('coinClicked', () => {
-        gameContainer.removeChild(sprite);
+    eventController.once('coinClicked', () => {
         animateCoin(23);
     });
 
@@ -72,9 +71,6 @@ const createHomeScreen = () => {
     };
     playSprite.on('click', () => {
         eventController.emit('playClicked');
-        cleanGameContainer().then(() => {
-            createBonusPage();
-        });
     });
     playSprite.anchor.set(0.5);
     playSprite.x = app.renderer.screen.width / 2;
@@ -107,6 +103,8 @@ const createStaticCoin = () => {
     sprite.anchor.set(0.5);
     sprite.interactive = true;
     sprite.on('click', () => {
+        gameContainer.removeChild(sprite);
+        sprite.destroy();
         eventController.emit('coinClicked');
     });
     gameContainer.addChild(sprite);
@@ -124,7 +122,7 @@ const animateCoin = (numberOfFrames) => {
     animatedCoin.y = app.renderer.screen.height / 2;
     animatedCoin.anchor.set(0.5);
     animatedCoin.gotoAndPlay(0);
-    gsap.fromTo(animatedCoin, 1, { scale: 1 }, { scale: 0 }).delay(2);
+    // gsap.fromTo(animatedCoin, 1, { scale: 1 }, { scale: 0 }).delay(2);
     gameContainer.addChild(animatedCoin);
 };
 
