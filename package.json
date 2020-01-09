@@ -4,15 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack src/index.js && http-server"
+    "start": "webpack src/index.js && http-server",
+    "build": "webpack src/index.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "http-server": "^0.12.1",
     "webpack": "^4.41.5",
-    "webpack-cli": "^3.3.10",
-    "webpack-dev-server": "^3.10.1"
+    "webpack-cli": "^3.3.10"
   },
   "dependencies": {
     "events": "^3.1.0",

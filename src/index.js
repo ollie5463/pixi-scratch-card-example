@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js';
 import * as eventEmitter from 'events';
-import gsap from 'gsap';
+import { Bounce } from 'gsap';
 import { TweenMax } from 'gsap';
 
 var app;
@@ -10,20 +10,7 @@ let gameContainer;
 let listOfPrizes = [1, 2, 3, 5, 10, 20, 100, 1000];
 
 const resources = [
-    'resources/win_up_to_1k.png',
-    'resources/play_button.png',
-    'resources/play_button_active.png',
-    'resources/game_panel_01.png',
-    'resources/coin_spin/coin_spin.json',
-    'resources/prize_1.png',
-    'resources/prize_2.png',
-    'resources/prize_3.png',
-    'resources/prize_5.png',
-    'resources/prize_10.png',
-    'resources/prize_20.png',
-    'resources/prize_100.png',
-    'resources/prize_1000.png',
-    'resources/win_txt.png'
+    'resources/spritesheet.json'
 ];
 
 window.onload = function () {
@@ -38,6 +25,7 @@ window.onload = function () {
     app.loader.add(resources).load(handleLoadComplete);
 
     function handleLoadComplete() {
+        handleSpritesheetCreation();
         createGame();
         app.ticker.add(animate);
     }
@@ -48,7 +36,7 @@ window.onload = function () {
         });
     });
     eventController.once('coinClicked', () => {
-        animateCoin(23);
+        animateCoin(24);
     });
     eventController.once('coinDisappeared', () => {
         const randomWinAmount = getRandomWinAmount();
@@ -62,6 +50,18 @@ window.onload = function () {
     function animate() {
     }
 }
+const handleSpritesheetCreation = () => {
+    app.loader.resources['resources/spritesheet.json'].data.frames.forEach((texture) => {
+        const frameOrig = new PIXI.Rectangle(0, 0, texture.sourceSize.w, texture.sourceSize.h);
+        const frameRect = new PIXI.Rectangle(texture.frame.x, texture.frame.y, texture.frame.w, texture.frame.h);
+        const newTexture = new PIXI.Texture(app.loader.resources['resources/spritesheet.json_image'].texture, frameRect, frameOrig, null);
+        app.loader.resources[texture.filename] = {
+            texture: newTexture,
+            url: texture.filename
+        }
+        PIXI.utils.TextureCache[texture.filename] = texture;
+    })
+}
 
 const createGame = () => {
     app.stage.addChild(createHomeScreen());
@@ -70,22 +70,21 @@ const createGame = () => {
 
 const createHomeScreen = () => {
     gameContainer = new PIXI.Container();
-
-    const winUpToTexture = app.loader.resources['resources/win_up_to_1k.png'].texture;
+    const winUpToTexture = app.loader.resources['win_up_to_1k.png'].texture;
     const winUpToTextureSprite = new PIXI.Sprite(winUpToTexture);
     winUpToTextureSprite.anchor.set(0.5);
     winUpToTextureSprite.x = app.renderer.screen.width / 2;
     winUpToTextureSprite.y = 100;
     TweenMax.fromTo(winUpToTextureSprite, 1, { alpha: 0 }, { alpha: 1 });
 
-    const playTexture = app.loader.resources['resources/play_button.png'].texture;
+    const playTexture = app.loader.resources['play_button.png'].texture;
     const playSprite = new PIXI.Sprite(playTexture);
     playSprite.interactive = true;
     playSprite.mouseover = () => {
-        playSprite.texture = app.loader.resources['resources/play_button_active.png'].texture;
+        playSprite.texture = app.loader.resources['play_button_active.png'].texture;
     };
     playSprite.mouseout = () => {
-        playSprite.texture = app.loader.resources['resources/play_button.png'].texture;
+        playSprite.texture = app.loader.resources['play_button.png'].texture;
     };
     playSprite.on('click', () => {
         eventController.emit('playClicked');
@@ -102,7 +101,7 @@ const createHomeScreen = () => {
 
 const createBonusPage = () => {
     gameContainer = new PIXI.Container();
-    const texture = app.loader.resources['resources/game_panel_01.png'].texture;
+    const texture = app.loader.resources['game_panel_01.png'].texture;
     const sprite = new PIXI.Sprite(texture);
     sprite.anchor.set(0.5);
     sprite.x = app.renderer.screen.width / 2;
@@ -132,31 +131,33 @@ const getRandomWinAmount = () => listOfPrizes[Math.round((listOfPrizes.length * 
 
 
 const createWinAmount = (winAmount) => {
-    const texture = app.loader.resources[`resources/prize_${winAmount}.png`].texture;
+    const texture = app.loader.resources[`prize_${winAmount}.png`].texture;
     const sprite = new PIXI.Sprite(texture);
     sprite.x = app.renderer.screen.width / 2;
     sprite.y = app.renderer.screen.height / 2;
     sprite.anchor.set(0.5);
     sprite.tint = Math.random() * 0xFFFFFF;
-    TweenMax.fromTo(sprite, 1, { alpha: 0 }, { alpha: 1 }); 
+    TweenMax.fromTo(sprite, 1, { width: 0, height: 0 },
+        { width: sprite.width, height: sprite.height, ease: Bounce.easeIn}); 
     gameContainer.addChild(sprite);
 }
 
 const createCongratulationsMessage = () => {
-    const texture = app.loader.resources['resources/win_txt.png'].texture;
+    const texture = app.loader.resources['win_txt.png'].texture;
     const sprite = new PIXI.Sprite(texture);
     sprite.x = app.renderer.screen.width / 2;
     sprite.y = 100;
     sprite.scale.set(0.4);
     sprite.anchor.set(0.5);
-    TweenMax.fromTo(sprite, 1, { alpha: 0 }, { alpha: 1 }); 
+    TweenMax.fromTo(sprite, 1, { width: 0, height: 0 },
+        { width: sprite.width, height: sprite.height, ease: Bounce.easeIn})
     gameContainer.addChild(sprite);
 }
 
 const animateCoin = (numberOfFrames) => {
     const animatedCoinTextures = [];
-    for (let i = 0; i < numberOfFrames; i++){
-        const texture = PIXI.Texture.fromFrame(`${i}`);
+    for (let i = 1; i < numberOfFrames; i++){
+        const texture = app.loader.resources[`coin${i}.png`].texture;
         animatedCoinTextures.push(texture);
     }
 
@@ -165,8 +166,8 @@ const animateCoin = (numberOfFrames) => {
     animatedCoin.y = app.renderer.screen.height / 2;
     animatedCoin.anchor.set(0.5);
     animatedCoin.gotoAndPlay(0);
-    TweenMax.fromTo(animatedCoin, 3, { alpha: 1 }, {
-        alpha: 0, onComplete: () => {
+    TweenMax.to(animatedCoin, 1, {
+        width: 0, height: 0, onComplete: () => {
             eventController.emit('coinDisappeared');
         }
     });
