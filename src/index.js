@@ -1,4 +1,9 @@
-let app;
+import * as PIXI from 'pixi.js';
+import * as eventEmitter from 'events';
+import gsap from 'gsap';
+
+var app;
+var eventController;
 
 let gameContainer;
 
@@ -11,6 +16,7 @@ const resources = [
 ];
 
 window.onload = function () {
+    eventController = new eventEmitter.EventEmitter();
     app = new PIXI.Application({
         width: 800,
         height: 600,
@@ -24,6 +30,17 @@ window.onload = function () {
         createGame();
         app.ticker.add(animate);
     }
+
+    eventController.on('playClicked', () => {
+        cleanGameContainer().then(() => {
+            createBonusPage();
+        });
+    });
+    eventController.on('coinClicked', () => {
+        gameContainer.removeChild(sprite);
+        animateCoin(23);
+    });
+
 
     function animate() {
     }
@@ -42,7 +59,7 @@ const createHomeScreen = () => {
     winUpToTextureSprite.anchor.set(0.5);
     winUpToTextureSprite.x = app.renderer.screen.width / 2;
     winUpToTextureSprite.y = 100;
-    TweenMax.fromTo(winUpToTextureSprite, 1, { alpha: 0 }, { alpha: 1 });
+    gsap.fromTo(winUpToTextureSprite, 1, { alpha: 0 }, { alpha: 1 });
 
     const playTexture = app.loader.resources['resources/play_button.png'].texture;
     const playSprite = new PIXI.Sprite(playTexture);
@@ -54,6 +71,7 @@ const createHomeScreen = () => {
         playSprite.texture = app.loader.resources['resources/play_button.png'].texture;
     };
     playSprite.on('click', () => {
+        eventController.emit('playClicked');
         cleanGameContainer().then(() => {
             createBonusPage();
         });
@@ -61,7 +79,7 @@ const createHomeScreen = () => {
     playSprite.anchor.set(0.5);
     playSprite.x = app.renderer.screen.width / 2;
     playSprite.y = 300;
-    TweenMax.fromTo(playSprite, 1, { alpha: 0 }, { alpha: 1 });
+    gsap.fromTo(playSprite, 1, { alpha: 0 }, { alpha: 1 });
 
     gameContainer.addChild(winUpToTextureSprite);
     gameContainer.addChild(playSprite);
@@ -77,7 +95,7 @@ const createBonusPage = () => {
     sprite.y = 300;
     gameContainer.addChild(sprite);
     createStaticCoin();
-    TweenMax.fromTo(gameContainer, 1, { alpha: 0 }, { alpha: 1 });
+    gsap.fromTo(gameContainer, 1, { alpha: 0 }, { alpha: 1 });
     app.stage.addChild(gameContainer);
 };
 
@@ -89,8 +107,7 @@ const createStaticCoin = () => {
     sprite.anchor.set(0.5);
     sprite.interactive = true;
     sprite.on('click', () => {
-        gameContainer.removeChild(sprite);
-        animateCoin(23);
+        eventController.emit('coinClicked');
     });
     gameContainer.addChild(sprite);
 };
@@ -107,13 +124,13 @@ const animateCoin = (numberOfFrames) => {
     animatedCoin.y = app.renderer.screen.height / 2;
     animatedCoin.anchor.set(0.5);
     animatedCoin.gotoAndPlay(0);
-    // TweenMax.fromTo(animatedCoin, 1, { scale: 1 }, { scale: 0 }).delay(2);
+    gsap.fromTo(animatedCoin, 1, { scale: 1 }, { scale: 0 }).delay(2);
     gameContainer.addChild(animatedCoin);
 };
 
 const cleanGameContainer = () => {
     return new Promise((resolve) => {
-        TweenMax.fromTo(gameContainer, 1, { alpha: 1 }, { alpha: 0, onComplete: () => { 
+        gsap.fromTo(gameContainer, 1, { alpha: 1 }, { alpha: 0, onComplete: () => { 
             app.stage.removeChild(gameContainer);
             gameContainer.destroy();
             resolve();
